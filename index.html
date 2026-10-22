@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reproductor PGN</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      color: #eee;
+      padding: 20px 0;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+      color: #e2b96f;
+      text-transform: uppercase;
+    }
+
+    /* ── Upload area ── */
+    #upload-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    #drop-zone {
+      width: 340px;
+      height: 160px;
+      border: 2px dashed #e2b96f;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+      color: #aaa;
+      font-size: 0.95rem;
+    }
+
+    #drop-zone:hover, #drop-zone.drag-over {
+      background: rgba(226,185,111,0.08);
+      color: #e2b96f;
+    }
+
+    #file-input { display: none; }
+
+    .btn-upload {
+      background: #e2b96f;
+      color: #1a1a2e;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-upload:hover { background: #f0cc8a; }
+
+    /* ── Player area ── */
+    #player-area {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .player-bar {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      background: #16213e;
+      border-radius: 8px;
+    }
+
+    .player-icon {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+    }
+
+    .player-name { font-weight: 600; font-size: 0.95rem; flex: 1; }
+    .player-elo  { font-size: 0.8rem; color: #888; }
+
+    /* ── Board ── */
+    #board {
+      display: grid;
+      grid-template-columns: repeat(8, 60px);
+      grid-template-rows: repeat(8, 60px);
+      width: 480px;
+      height: 480px;
+      border: 3px solid #e2b96f;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    }
+
+    .square {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .square.light { background: #f0d9b5; }
+    .square.dark  { background: #b58863; }
+    .square.hl-from { background: rgba(255,220,50,0.55) !important; }
+    .square.hl-to   { background: rgba(255,220,50,0.80) !important; }
+
+    .piece-img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .coord-rank {
+      position: absolute;
+      top: 2px; left: 4px;
+      font-size: 0.58rem;
+      font-weight: 700;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .coord-file {
+      position: absolute;
+      bottom: 2px; right: 4px;
+      font-size: 0.58rem;
+      font-weight: 700;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .square.light .coord-rank,
+    .square.light .coord-file { color: #b58863; }
+    .square.dark  .coord-rank,
+    .square.dark  .coord-file { color: #f0d9b5; }
+
+    /* ── Controls ── */
+    #controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ctrl-btn {
+      background: #16213e;
+      border: 1px solid #2a2a5a;
+      color: #e2b96f;
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .ctrl-btn:hover:not(:disabled) { background: #1e2d5a; transform: scale(1.08); }
+    .ctrl-btn:disabled { opacity: 0.3; cursor: default; }
+
+    #move-counter {
+      font-size: 0.88rem;
+      color: #aaa;
+      min-width: 76px;
+      text-align: center;
+    }
+
+    /* ── Result ── */
+    #result-badge {
+      display: none;
+      background: #16213e;
+      border: 1px solid #e2b96f;
+      border-radius: 10px;
+      padding: 9px 26px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #e2b96f;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    
+
+    
+
+    /* ── Reset ── */
+    
+
+    #error-msg { color: #e07070; font-size: 0.85rem; display: none; }
+  </style>
+</head>
+<body>
+<h1>♟ Reproductor PGN</h1>
+<!-- Upload -->
+<div id="upload-area">
+<div id="drop-zone">
+<svg fill="none" height="40" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" width="40">
+<path d="M12 16V4m0 0L8 8m4-4l4 4"></path>
+<path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"></path>
+</svg>
+<span>Arrastra tu archivo .pgn aquí</span>
+<span style="font-size:0.8rem">o haz clic para seleccionar</span>
+</div>
+<input accept=".pgn,.txt" id="file-input" type="file"/>
+<button class="btn-upload" onclick="document.getElementById('file-input').click()">Seleccionar archivo PGN</button>
+<div id="error-msg">⚠ No se pudo leer el PGN. Verifica el formato.</div>
+</div>
+<!-- Player -->
+<div id="player-area">
+<div class="player-bar">
+<img alt="Negras" class="player-icon" id="black-icon" src="pieces/bK.svg?expires=1795256018&amp;signature=c4c811a2aec989fee923c5681ff22de0ff915bceb89690d19e699a452e76fcd0&amp;kid=prod-250922"/>
+<span class="player-name" id="black-name">Negras</span>
+<span class="player-elo" id="black-elo"></span>
+</div>
+<div id="board"></div>
+<div class="player-bar">
+<img alt="Blancas" class="player-icon" id="white-icon" src="pieces/wK.svg?expires=1795256018&amp;signature=7fcefc8b1f45cf76e046cfa60222d75265e9dfbdc33b3a3c0c7163602773689e&amp;kid=prod-250922"/>
+<span class="player-name" id="white-name">Blancas</span>
+<span class="player-elo" id="white-elo"></span>
+</div>
+<div id="result-badge"></div>
+<div id="controls">
+<button class="ctrl-btn" id="btn-start" title="Inicio">⏮</button>
+<button class="ctrl-btn" id="btn-prev" title="Anterior">◀</button>
+<button class="ctrl-btn" id="btn-next" title="Siguiente">▶</button>
+<button class="ctrl-btn" id="btn-end" title="Final">⏭</button>
+<span id="move-counter">0 / 0</span>
+</div>
+<button id="flip-btn">⇅ Girar tablero</button>
+<button id="reset-btn">↩ Cargar otra partida</button>
+</div>
+<script>
+// ─────────────────────────────────────────────
+//  PIECE → SVG PATH MAP  (CBurnett)
+// ─────────────────────────────────────────────
+const PIECE_IMG = {
+  wK:'pieces/wK.svg', wQ:'pieces/wQ.svg', wR:'pieces/wR.svg',
+  wB:'pieces/wB.svg', wN:'pieces/wN.svg', wP:'pieces/wP.svg',
+  bK:'pieces/bK.svg', bQ:'pieces/bQ.svg', bR:'pieces/bR.svg',
+  bB:'pieces/bB.svg', bN:'pieces/bN.svg', bP:'pieces/bP.svg'
+};
+
+// ─────────────────────────────────────────────
+//  BOARD CONVERSION  (chess.js → render format)
+// ─────────────────────────────────────────────
+// chess.js board() returns an 8x8 array where each square is
+// null or { type: 'p', color: 'w'|'b' }
+// We convert to our format: 'wP', 'bK', etc.
+function chessJsBoardToGrid(cjsBoard) {
+  return cjsBoard.map(row =>
+    row.map(sq => sq ? sq.color + sq.type.toUpperCase() : null)
+  );
+}
+
+// ─────────────────────────────────────────────
+//  BOARD RENDERER  (CBurnett SVG pieces)
+// ─────────────────────────────────────────────
+const FILES = ['a','b','c','d','e','f','g','h'];
+
+function renderBoard(board, fromSq, toSq) {
+  const el = document.getElementById('board');
+  el.innerHTML = '';
+  for (let ri = 0; ri < 8; ri++) {
+    for (let fi = 0; fi < 8; fi++) {
+      // Map display position to actual board coords based on flip
+      const r = flipped ? 7 - ri : ri;
+      const f = flipped ? 7 - fi : fi;
+
+      const sq = document.createElement('div');
+      sq.className = 'square ' + ((r+f)%2===0 ? 'light' : 'dark');
+      if (fromSq && fromSq[0]===r && fromSq[1]===f) sq.classList.add('hl-from');
+      if (toSq   && toSq[0]===r   && toSq[1]===f)   sq.classList.add('hl-to');
+
+      const p = board[r][f];
+      if (p && PIECE_IMG[p]) {
+        const img = document.createElement('img');
+        img.src = PIECE_IMG[p];
+        img.alt = p;
+        img.className = 'piece-img';
+        img.draggable = false;
+        sq.appendChild(img);
+      }
+
+      // Rank label (left column of display)
+      if (fi === 0) {
+        const cr = document.createElement('span');
+        cr.className = 'coord-rank';
+        cr.textContent = 8 - r;
+        sq.appendChild(cr);
+      }
+      // File label (bottom row of display)
+      if (ri === 7) {
+        const cf = document.createElement('span');
+        cf.className = 'coord-file';
+        cf.textContent = FILES[f];
+        sq.appendChild(cf);
+      }
+
+      el.appendChild(sq);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────
+//  APP STATE
+// ─────────────────────────────────────────────
+let states = [];
+let moveIdx = 0;
+let flipped = false; // false = white at bottom, true = black at bottom
+
+function loadGame(pgn) {
+  // Use chess.js to parse and replay the game
+  const chess = new Chess();
+  const loaded = chess.load_pgn(pgn, { sloppy: true });
+  if (!loaded) throw new Error('Invalid PGN');
+
+  // Extract headers
+  const white  = chess.header().White  || 'Blancas';
+  const black  = chess.header().Black  || 'Negras';
+  const whiteElo = chess.header().WhiteElo || '';
+  const blackElo = chess.header().BlackElo || '';
+  const result = chess.header().Result || '*';
+
+  // Collect all moves
+  const history = chess.history({ verbose: true });
+
+  // Replay from start, recording board state after each move
+  chess.reset();
+  states = [];
+  states.push({ board: chessJsBoardToGrid(chess.board()), from: null, to: null });
+
+  for (const move of history) {
+    chess.move(move);
+    const fromSq = algebraicToGrid(move.from);
+    const toSq   = algebraicToGrid(move.to);
+    states.push({ board: chessJsBoardToGrid(chess.board()), from: fromSq, to: toSq });
+  }
+
+  // Update UI metadata
+  document.getElementById('white-name').textContent = white;
+  document.getElementById('black-name').textContent = black;
+  document.getElementById('white-elo').textContent  = whiteElo ? `(${whiteElo})` : '';
+  document.getElementById('black-elo').textContent  = blackElo ? `(${blackElo})` : '';
+
+  const badge = document.getElementById('result-badge');
+  if (result && result !== '*') {
+    let label = result;
+    if (result === '1-0')          label = `${white} gana  ·  1-0`;
+    else if (result === '0-1')     label = `${black} gana  ·  0-1`;
+    else if (result === '1/2-1/2') label = 'Tablas  ·  ½-½';
+    badge.textContent = label;
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
+
+  moveIdx = 0;
+  updateDisplay();
+}
+
+// Convert algebraic square (e.g. "e4") to grid [rank, file] indices
+function algebraicToGrid(sq) {
+  const file = sq.charCodeAt(0) - 97;       // a=0..h=7
+  const rank = 8 - parseInt(sq[1]);          // '8'=0..'1'=7
+  return [rank, file];
+}
+
+function updateDisplay() {
+  const s = states[moveIdx];
+  renderBoard(s.board, s.from, s.to);
+  document.getElementById('move-counter').textContent = `${moveIdx} / ${states.length-1}`;
+  document.getElementById('btn-start').disabled = moveIdx === 0;
+  document.getElementById('btn-prev').disabled  = moveIdx === 0;
+  document.getElementById('btn-next').disabled  = moveIdx === states.length-1;
+  document.getElementById('btn-end').disabled   = moveIdx === states.length-1;
+}
+
+function goTo(idx) {
+  moveIdx = Math.max(0, Math.min(states.length-1, idx));
+  updateDisplay();
+}
+
+
+
+// ─────────────────────────────────────────────
+//  CONTROLS
+// ─────────────────────────────────────────────
+document.getElementById('flip-btn').addEventListener('click', () => {
+  flipped = !flipped;
+  updateDisplay();
+});
+
+document.getElementById('btn-start').addEventListener('click', () => goTo(0));
+document.getElementById('btn-prev').addEventListener('click',  () => goTo(moveIdx-1));
+document.getElementById('btn-next').addEventListener('click',  () => goTo(moveIdx+1));
+document.getElementById('btn-end').addEventListener('click',   () => goTo(states.length-1));
+
+document.addEventListener('keydown', e => {
+  if (document.getElementById('player-area').style.display === 'none' ||
+      !document.getElementById('player-area').style.display) return;
+  if (e.key==='ArrowLeft')  goTo(moveIdx-1);
+  if (e.key==='ArrowRight') goTo(moveIdx+1);
+  if (e.key==='Home')       goTo(0);
+  if (e.key==='End')        goTo(states.length-1);
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  flipped = false;
+  document.getElementById('player-area').style.display = 'none';
+  document.getElementById('upload-area').style.display = 'flex';
+  document.getElementById('error-msg').style.display = 'none';
+  document.getElementById('file-input').value = '';
+});
+
+// ─────────────────────────────────────────────
+//  FILE LOADING
+// ─────────────────────────────────────────────
+function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const pgn = e.target.result;
+      if (!pgn.trim()) throw new Error('empty');
+      loadGame(pgn);
+      document.getElementById('upload-area').style.display = 'none';
+      document.getElementById('player-area').style.display = 'flex';
+      document.getElementById('error-msg').style.display = 'none';
+    } catch(err) {
+      document.getElementById('error-msg').style.display = 'block';
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('file-input').addEventListener('change', e => handleFile(e.target.files[0]));
+
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('click', () => document.getElementById('file-input').click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  handleFile(e.dataTransfer.files[0]);
+});
+</script>
+</body>
+</html>
