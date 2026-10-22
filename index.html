@@ -7,211 +7,263 @@
 <title>Reproductor PGN</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      background: #1a1a2e;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      font-family: 'Segoe UI', sans-serif;
-      color: #eee;
-      padding: 20px 0;
-    }
+  body {
+    background: #1a1a2e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    color: #eee;
+    padding: 20px 0;
+  }
 
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-      letter-spacing: 2px;
-      color: #e2b96f;
-      text-transform: uppercase;
-    }
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    color: #e2b96f;
+    text-transform: uppercase;
+  }
 
-    /* ── Upload area ── */
-    #upload-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 14px;
-    }
+  /* ── Upload area ── */
+  #upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    width: 340px;
+  }
 
-    #drop-zone {
-      width: 340px;
-      height: 160px;
-      border: 2px dashed #e2b96f;
-      border-radius: 14px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      cursor: pointer;
-      transition: background 0.2s;
-      color: #aaa;
-      font-size: 0.95rem;
-    }
+  #drop-zone {
+    width: 100%;
+    height: 150px;
+    border: 2px dashed #e2b96f;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: #aaa;
+    font-size: 0.95rem;
+  }
+  #drop-zone:hover, #drop-zone.drag-over {
+    background: rgba(226,185,111,0.08);
+    color: #e2b96f;
+  }
 
-    #drop-zone:hover, #drop-zone.drag-over {
-      background: rgba(226,185,111,0.08);
-      color: #e2b96f;
-    }
+  #file-input { display: none; }
 
-    #file-input { display: none; }
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    color: #555;
+    font-size: 0.8rem;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #2a2a5a;
+  }
 
-    .btn-upload {
-      background: #e2b96f;
-      color: #1a1a2e;
-      border: none;
-      padding: 10px 28px;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .btn-upload:hover { background: #f0cc8a; }
+  /* PGN paste area */
+  #pgn-paste {
+    width: 100%;
+    height: 110px;
+    background: #16213e;
+    border: 1px solid #2a2a5a;
+    border-radius: 8px;
+    color: #eee;
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    font-family: 'Courier New', monospace;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.4;
+  }
+  #pgn-paste::placeholder { color: #555; }
+  #pgn-paste:focus { border-color: #e2b96f; }
 
-    /* ── Player area ── */
-    #player-area {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-    }
+  /* Primary button (gold fill) */
+  .btn-primary {
+    background: #e2b96f;
+    color: #1a1a2e;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { background: #f0cc8a; }
 
-    .player-bar {
-      width: 100%;
-      max-width: 480px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 12px;
-      background: #16213e;
-      border-radius: 8px;
-    }
+  #error-msg { color: #e07070; font-size: 0.85rem; display: none; text-align: center; }
 
-    .player-icon {
-      width: 28px;
-      height: 28px;
-      object-fit: contain;
-      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
-    }
+  /* ── Player area ── */
+  #player-area {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
 
-    .player-name { font-weight: 600; font-size: 0.95rem; flex: 1; }
-    .player-elo  { font-size: 0.8rem; color: #888; }
+  .player-bar {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: #16213e;
+    border-radius: 8px;
+  }
+  .player-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+  }
+  .player-name { font-weight: 600; font-size: 0.95rem; flex: 1; }
+  .player-elo  { font-size: 0.8rem; color: #888; }
 
-    /* ── Board ── */
-    #board {
-      display: grid;
-      grid-template-columns: repeat(8, 60px);
-      grid-template-rows: repeat(8, 60px);
-      width: 480px;
-      height: 480px;
-      border: 3px solid #e2b96f;
-      border-radius: 4px;
-      overflow: hidden;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-    }
+  /* ── Board ── */
+  #board {
+    display: grid;
+    grid-template-columns: repeat(8, 60px);
+    grid-template-rows: repeat(8, 60px);
+    width: 480px;
+    height: 480px;
+    border: 3px solid #e2b96f;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  }
 
-    .square {
-      width: 60px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
+  .square {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .square.light { background: #f0d9b5; }
+  .square.dark  { background: #b58863; }
+  .square.hl-from { background: rgba(255,220,50,0.55) !important; }
+  .square.hl-to   { background: rgba(255,220,50,0.80) !important; }
 
-    .square.light { background: #f0d9b5; }
-    .square.dark  { background: #b58863; }
-    .square.hl-from { background: rgba(255,220,50,0.55) !important; }
-    .square.hl-to   { background: rgba(255,220,50,0.80) !important; }
+  .piece-img {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+  }
 
-    .piece-img {
-      width: 52px;
-      height: 52px;
-      object-fit: contain;
-      pointer-events: none;
-      user-select: none;
-    }
+  .coord-rank {
+    position: absolute;
+    top: 2px; left: 4px;
+    font-size: 0.58rem;
+    font-weight: 700;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .coord-file {
+    position: absolute;
+    bottom: 2px; right: 4px;
+    font-size: 0.58rem;
+    font-weight: 700;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .square.light .coord-rank,
+  .square.light .coord-file { color: #b58863; }
+  .square.dark  .coord-rank,
+  .square.dark  .coord-file { color: #f0d9b5; }
 
-    .coord-rank {
-      position: absolute;
-      top: 2px; left: 4px;
-      font-size: 0.58rem;
-      font-weight: 700;
-      opacity: 0.6;
-      pointer-events: none;
-    }
-    .coord-file {
-      position: absolute;
-      bottom: 2px; right: 4px;
-      font-size: 0.58rem;
-      font-weight: 700;
-      opacity: 0.6;
-      pointer-events: none;
-    }
-    .square.light .coord-rank,
-    .square.light .coord-file { color: #b58863; }
-    .square.dark  .coord-rank,
-    .square.dark  .coord-file { color: #f0d9b5; }
+  /* ── Navigation controls ── */
+  #controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-    /* ── Controls ── */
-    #controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+  /* Square icon buttons (nav + flip + reset) */
+  .ctrl-btn {
+    background: #16213e;
+    border: 1px solid #2a2a5a;
+    color: #e2b96f;
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .ctrl-btn:hover:not(:disabled) { background: #1e2d5a; transform: scale(1.08); }
+  .ctrl-btn:disabled { opacity: 0.3; cursor: default; }
 
-    .ctrl-btn {
-      background: #16213e;
-      border: 1px solid #2a2a5a;
-      color: #e2b96f;
-      width: 46px;
-      height: 46px;
-      border-radius: 10px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.15s, transform 0.1s;
-    }
-    .ctrl-btn:hover:not(:disabled) { background: #1e2d5a; transform: scale(1.08); }
-    .ctrl-btn:disabled { opacity: 0.3; cursor: default; }
+  #move-counter {
+    font-size: 0.88rem;
+    color: #aaa;
+    min-width: 76px;
+    text-align: center;
+  }
 
-    #move-counter {
-      font-size: 0.88rem;
-      color: #aaa;
-      min-width: 76px;
-      text-align: center;
-    }
+  /* ── Secondary controls row (flip + reset) ── */
+  #secondary-controls {
+    display: flex;
+    gap: 8px;
+  }
 
-    /* ── Result ── */
-    #result-badge {
-      display: none;
-      background: #16213e;
-      border: 1px solid #e2b96f;
-      border-radius: 10px;
-      padding: 9px 26px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #e2b96f;
-      letter-spacing: 1px;
-      text-align: center;
-    }
+  /* Wide ctrl-btn variant for text labels */
+  .ctrl-btn-wide {
+    background: #16213e;
+    border: 1px solid #2a2a5a;
+    color: #e2b96f;
+    height: 46px;
+    padding: 0 18px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .ctrl-btn-wide:hover { background: #1e2d5a; transform: scale(1.04); }
 
-    
-
-    
-
-    /* ── Reset ── */
-    
-
-    #error-msg { color: #e07070; font-size: 0.85rem; display: none; }
-  </style>
+  /* ── Result badge ── */
+  #result-badge {
+    display: none;
+    background: #16213e;
+    border: 1px solid #e2b96f;
+    border-radius: 10px;
+    padding: 9px 26px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #e2b96f;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+</style>
 </head>
 <body>
 <h1>♟ Reproductor PGN</h1>
@@ -226,19 +278,25 @@
 <span style="font-size:0.8rem">o haz clic para seleccionar</span>
 </div>
 <input accept=".pgn,.txt" id="file-input" type="file"/>
-<button class="btn-upload" onclick="document.getElementById('file-input').click()">Seleccionar archivo PGN</button>
-<div id="error-msg">⚠ No se pudo leer el PGN. Verifica el formato.</div>
+<button class="btn-primary" onclick="document.getElementById('file-input').click()">Seleccionar archivo PGN</button>
+<div class="divider">o pega el PGN</div>
+<textarea id="pgn-paste" placeholder='[Event "..."]
+[White "..."]
+
+1.e4 e5 2.Nf3 ...'></textarea>
+<button class="btn-primary" id="btn-load-paste" style="width:100%">Cargar PGN pegado</button>
+<div id="error-msg">⚠ No se pudo cargar el PGN. Verifica el formato o la URL.</div>
 </div>
 <!-- Player -->
 <div id="player-area">
 <div class="player-bar">
-<img alt="Negras" class="player-icon" id="black-icon" src="pieces/bK.svg?expires=1795256018&amp;signature=c4c811a2aec989fee923c5681ff22de0ff915bceb89690d19e699a452e76fcd0&amp;kid=prod-250922"/>
+<img alt="Negras" class="player-icon" id="black-icon" src="pieces/bK.svg?expires=1795257412&amp;signature=a42a35f012611f606897e4b1257cbe5a61aa504aae25f6553bf3023870d2aa67&amp;kid=prod-250922"/>
 <span class="player-name" id="black-name">Negras</span>
 <span class="player-elo" id="black-elo"></span>
 </div>
 <div id="board"></div>
 <div class="player-bar">
-<img alt="Blancas" class="player-icon" id="white-icon" src="pieces/wK.svg?expires=1795256018&amp;signature=7fcefc8b1f45cf76e046cfa60222d75265e9dfbdc33b3a3c0c7163602773689e&amp;kid=prod-250922"/>
+<img alt="Blancas" class="player-icon" id="white-icon" src="pieces/wK.svg?expires=1795257412&amp;signature=b16993de196f114f7bc0f095942800934677e47eb9f16a196f16f744b7b60b15&amp;kid=prod-250922"/>
 <span class="player-name" id="white-name">Blancas</span>
 <span class="player-elo" id="white-elo"></span>
 </div>
@@ -250,8 +308,10 @@
 <button class="ctrl-btn" id="btn-end" title="Final">⏭</button>
 <span id="move-counter">0 / 0</span>
 </div>
-<button id="flip-btn">⇅ Girar tablero</button>
-<button id="reset-btn">↩ Cargar otra partida</button>
+<div id="secondary-controls">
+<button class="ctrl-btn-wide" id="flip-btn">⇅ Girar tablero</button>
+<button class="ctrl-btn-wide" id="reset-btn">↩ Otra partida</button>
+</div>
 </div>
 <script>
 // ─────────────────────────────────────────────
@@ -267,9 +327,6 @@ const PIECE_IMG = {
 // ─────────────────────────────────────────────
 //  BOARD CONVERSION  (chess.js → render format)
 // ─────────────────────────────────────────────
-// chess.js board() returns an 8x8 array where each square is
-// null or { type: 'p', color: 'w'|'b' }
-// We convert to our format: 'wP', 'bK', etc.
 function chessJsBoardToGrid(cjsBoard) {
   return cjsBoard.map(row =>
     row.map(sq => sq ? sq.color + sq.type.toUpperCase() : null)
@@ -286,7 +343,6 @@ function renderBoard(board, fromSq, toSq) {
   el.innerHTML = '';
   for (let ri = 0; ri < 8; ri++) {
     for (let fi = 0; fi < 8; fi++) {
-      // Map display position to actual board coords based on flip
       const r = flipped ? 7 - ri : ri;
       const f = flipped ? 7 - fi : fi;
 
@@ -305,14 +361,12 @@ function renderBoard(board, fromSq, toSq) {
         sq.appendChild(img);
       }
 
-      // Rank label (left column of display)
       if (fi === 0) {
         const cr = document.createElement('span');
         cr.className = 'coord-rank';
         cr.textContent = 8 - r;
         sq.appendChild(cr);
       }
-      // File label (bottom row of display)
       if (ri === 7) {
         const cf = document.createElement('span');
         cf.className = 'coord-file';
@@ -328,39 +382,39 @@ function renderBoard(board, fromSq, toSq) {
 // ─────────────────────────────────────────────
 //  APP STATE
 // ─────────────────────────────────────────────
-let states = [];
+let states  = [];
 let moveIdx = 0;
-let flipped = false; // false = white at bottom, true = black at bottom
+let flipped = false;
 
+// ─────────────────────────────────────────────
+//  LOAD GAME
+// ─────────────────────────────────────────────
 function loadGame(pgn) {
-  // Use chess.js to parse and replay the game
   const chess = new Chess();
   const loaded = chess.load_pgn(pgn, { sloppy: true });
   if (!loaded) throw new Error('Invalid PGN');
 
-  // Extract headers
-  const white  = chess.header().White  || 'Blancas';
-  const black  = chess.header().Black  || 'Negras';
+  const white    = chess.header().White    || 'Blancas';
+  const black    = chess.header().Black    || 'Negras';
   const whiteElo = chess.header().WhiteElo || '';
   const blackElo = chess.header().BlackElo || '';
-  const result = chess.header().Result || '*';
+  const result   = chess.header().Result   || '*';
 
-  // Collect all moves
   const history = chess.history({ verbose: true });
 
-  // Replay from start, recording board state after each move
   chess.reset();
   states = [];
   states.push({ board: chessJsBoardToGrid(chess.board()), from: null, to: null });
 
   for (const move of history) {
     chess.move(move);
-    const fromSq = algebraicToGrid(move.from);
-    const toSq   = algebraicToGrid(move.to);
-    states.push({ board: chessJsBoardToGrid(chess.board()), from: fromSq, to: toSq });
+    states.push({
+      board: chessJsBoardToGrid(chess.board()),
+      from: algebraicToGrid(move.from),
+      to:   algebraicToGrid(move.to)
+    });
   }
 
-  // Update UI metadata
   document.getElementById('white-name').textContent = white;
   document.getElementById('black-name').textContent = black;
   document.getElementById('white-elo').textContent  = whiteElo ? `(${whiteElo})` : '';
@@ -382,13 +436,23 @@ function loadGame(pgn) {
   updateDisplay();
 }
 
-// Convert algebraic square (e.g. "e4") to grid [rank, file] indices
 function algebraicToGrid(sq) {
-  const file = sq.charCodeAt(0) - 97;       // a=0..h=7
-  const rank = 8 - parseInt(sq[1]);          // '8'=0..'1'=7
-  return [rank, file];
+  return [8 - parseInt(sq[1]), sq.charCodeAt(0) - 97];
 }
 
+function showPlayer() {
+  document.getElementById('upload-area').style.display = 'none';
+  document.getElementById('player-area').style.display = 'flex';
+  document.getElementById('error-msg').style.display   = 'none';
+}
+
+function showError() {
+  document.getElementById('error-msg').style.display = 'block';
+}
+
+// ─────────────────────────────────────────────
+//  DISPLAY
+// ─────────────────────────────────────────────
 function updateDisplay() {
   const s = states[moveIdx];
   renderBoard(s.board, s.from, s.to);
@@ -404,69 +468,75 @@ function goTo(idx) {
   updateDisplay();
 }
 
-
-
 // ─────────────────────────────────────────────
 //  CONTROLS
 // ─────────────────────────────────────────────
-document.getElementById('flip-btn').addEventListener('click', () => {
-  flipped = !flipped;
-  updateDisplay();
-});
-
 document.getElementById('btn-start').addEventListener('click', () => goTo(0));
 document.getElementById('btn-prev').addEventListener('click',  () => goTo(moveIdx-1));
 document.getElementById('btn-next').addEventListener('click',  () => goTo(moveIdx+1));
 document.getElementById('btn-end').addEventListener('click',   () => goTo(states.length-1));
 
-document.addEventListener('keydown', e => {
-  if (document.getElementById('player-area').style.display === 'none' ||
-      !document.getElementById('player-area').style.display) return;
-  if (e.key==='ArrowLeft')  goTo(moveIdx-1);
-  if (e.key==='ArrowRight') goTo(moveIdx+1);
-  if (e.key==='Home')       goTo(0);
-  if (e.key==='End')        goTo(states.length-1);
+document.getElementById('flip-btn').addEventListener('click', () => {
+  flipped = !flipped;
+  updateDisplay();
 });
 
 document.getElementById('reset-btn').addEventListener('click', () => {
   flipped = false;
   document.getElementById('player-area').style.display = 'none';
   document.getElementById('upload-area').style.display = 'flex';
-  document.getElementById('error-msg').style.display = 'none';
+  document.getElementById('error-msg').style.display   = 'none';
   document.getElementById('file-input').value = '';
+  document.getElementById('pgn-paste').value  = '';
+});
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('player-area').style.display ||
+       document.getElementById('player-area').style.display === 'none') return;
+  if (e.key === 'ArrowLeft')  goTo(moveIdx-1);
+  if (e.key === 'ArrowRight') goTo(moveIdx+1);
+  if (e.key === 'Home')       goTo(0);
+  if (e.key === 'End')        goTo(states.length-1);
 });
 
 // ─────────────────────────────────────────────
 //  FILE LOADING
 // ─────────────────────────────────────────────
+function handlePGNText(pgn) {
+  try {
+    if (!pgn.trim()) throw new Error('empty');
+    loadGame(pgn);
+    showPlayer();
+  } catch(e) {
+    showError();
+  }
+}
+
 function handleFile(file) {
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const pgn = e.target.result;
-      if (!pgn.trim()) throw new Error('empty');
-      loadGame(pgn);
-      document.getElementById('upload-area').style.display = 'none';
-      document.getElementById('player-area').style.display = 'flex';
-      document.getElementById('error-msg').style.display = 'none';
-    } catch(err) {
-      document.getElementById('error-msg').style.display = 'block';
-    }
-  };
+  reader.onload = e => handlePGNText(e.target.result);
   reader.readAsText(file);
 }
 
 document.getElementById('file-input').addEventListener('change', e => handleFile(e.target.files[0]));
 
 const dropZone = document.getElementById('drop-zone');
-dropZone.addEventListener('click', () => document.getElementById('file-input').click());
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('click',     () => document.getElementById('file-input').click());
+dropZone.addEventListener('dragover',  e  => { e.preventDefault(); dropZone.classList.add('drag-over'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop', e => {
   e.preventDefault();
   dropZone.classList.remove('drag-over');
   handleFile(e.dataTransfer.files[0]);
+});
+
+// ─────────────────────────────────────────────
+//  URL LOADING
+// ─────────────────────────────────────────────
+document.getElementById('btn-load-paste').addEventListener('click', () => {
+  const pgn = document.getElementById('pgn-paste').value;
+  handlePGNText(pgn);
 });
 </script>
 </body>
