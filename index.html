@@ -15,18 +15,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    min-height: 100dvh;
     font-family: 'Segoe UI', sans-serif;
     color: #eee;
-    padding: 20px 0;
-  }
-
-  h1 {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-    letter-spacing: 2px;
-    color: #e2b96f;
-    text-transform: uppercase;
+    padding: 6px 10px;
   }
 
   /* ── Upload area ── */
@@ -34,24 +26,24 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
-    width: 340px;
+    gap: 10px;
+    width: min(340px, 100%);
   }
 
   #drop-zone {
     width: 100%;
-    height: 150px;
+    height: 130px;
     border: 2px dashed #e2b96f;
     border-radius: 14px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     cursor: pointer;
     transition: background 0.2s;
     color: #aaa;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
   }
   #drop-zone:hover, #drop-zone.drag-over {
     background: rgba(226,185,111,0.08);
@@ -60,14 +52,13 @@
 
   #file-input { display: none; }
 
-  /* Divider */
   .divider {
     display: flex;
     align-items: center;
     gap: 10px;
     width: 100%;
     color: #555;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
   .divider::before, .divider::after {
     content: '';
@@ -76,16 +67,15 @@
     background: #2a2a5a;
   }
 
-  /* PGN paste area */
   #pgn-paste {
     width: 100%;
-    height: 110px;
+    height: 100px;
     background: #16213e;
     border: 1px solid #2a2a5a;
     border-radius: 8px;
     color: #eee;
     padding: 10px 12px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-family: 'Courier New', monospace;
     resize: vertical;
     outline: none;
@@ -95,74 +85,73 @@
   #pgn-paste::placeholder { color: #555; }
   #pgn-paste:focus { border-color: #e2b96f; }
 
-  /* Primary button (gold fill) */
   .btn-primary {
     background: #e2b96f;
     color: #1a1a2e;
     border: none;
-    padding: 10px 20px;
+    padding: 9px 20px;
     border-radius: 8px;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-weight: 700;
     cursor: pointer;
     transition: background 0.2s;
     white-space: nowrap;
+    width: 100%;
   }
   .btn-primary:hover { background: #f0cc8a; }
 
-  #error-msg { color: #e07070; font-size: 0.85rem; display: none; text-align: center; }
+  #error-msg { color: #e07070; font-size: 0.82rem; display: none; text-align: center; }
 
   /* ── Player area ── */
   #player-area {
     display: none;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 5px;
+    width: 100%;
   }
 
   .player-bar {
     width: 100%;
-    max-width: 486px;
+    max-width: var(--board-px, 480px);
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
+    gap: 8px;
+    padding: 5px 10px;
     background: #16213e;
     border-radius: 8px;
+    flex-shrink: 0;
   }
   .player-icon {
-    width: 28px;
-    height: 28px;
+    width: 22px;
+    height: 22px;
     object-fit: contain;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
   }
-  .player-name { font-weight: 600; font-size: 0.95rem; flex: 1; }
-  .player-elo  { font-size: 0.8rem; color: #888; }
+  .player-name { font-weight: 600; font-size: 0.85rem; flex: 1; }
+  .player-elo  { font-size: 0.72rem; color: #888; }
 
   /* ── Board ── */
-  /* The grid itself sizes to exactly 8×60px = 480px.
-     The border lives on a wrapper so it never eats into the squares. */
   #board-frame {
     border: 3px solid #e2b96f;
     border-radius: 4px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-    line-height: 0; /* removes inline gap */
+    box-shadow: 0 6px 30px rgba(0,0,0,0.6);
     display: inline-block;
+    line-height: 0;
+    flex-shrink: 0;
   }
 
   #board {
     display: grid;
-    grid-template-columns: repeat(8, 60px);
-    grid-template-rows: repeat(8, 60px);
+    grid-template-columns: repeat(8, 1fr);
   }
 
   .square {
-    width: 60px;
-    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
+    aspect-ratio: 1;
   }
   .square.light { background: #f0d9b5; }
   .square.dark  { background: #b58863; }
@@ -170,8 +159,8 @@
   .square.hl-to   { background: rgba(255,220,50,0.80) !important; }
 
   .piece-img {
-    width: 52px;
-    height: 52px;
+    width: 87%;
+    height: 87%;
     object-fit: contain;
     pointer-events: none;
     user-select: none;
@@ -179,16 +168,16 @@
 
   .coord-rank {
     position: absolute;
-    top: 2px; left: 4px;
-    font-size: 0.58rem;
+    top: 2px; left: 3px;
+    font-size: clamp(0.42rem, 1vw, 0.58rem);
     font-weight: 700;
     opacity: 0.6;
     pointer-events: none;
   }
   .coord-file {
     position: absolute;
-    bottom: 2px; right: 4px;
-    font-size: 0.58rem;
+    bottom: 2px; right: 3px;
+    font-size: clamp(0.42rem, 1vw, 0.58rem);
     font-weight: 700;
     opacity: 0.6;
     pointer-events: none;
@@ -198,21 +187,22 @@
   .square.dark  .coord-rank,
   .square.dark  .coord-file { color: #f0d9b5; }
 
-  /* ── Navigation controls ── */
+  /* ── Controls row ── */
   #controls {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    flex-shrink: 0;
   }
 
   .ctrl-btn {
     background: #16213e;
     border: 1px solid #2a2a5a;
     color: #e2b96f;
-    width: 46px;
-    height: 46px;
+    width: 42px;
+    height: 42px;
     border-radius: 10px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -223,61 +213,66 @@
   .ctrl-btn:disabled { opacity: 0.3; cursor: default; }
 
   #move-counter {
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     color: #aaa;
-    min-width: 76px;
+    min-width: 64px;
     text-align: center;
   }
 
-  /* ── Secondary controls row (flip + reset) ── */
-  #secondary-controls {
-    display: flex;
-    gap: 8px;
-  }
-
-  .ctrl-btn-wide {
-    background: #16213e;
-    border: 1px solid #2a2a5a;
-    color: #e2b96f;
-    height: 46px;
-    padding: 0 18px;
-    border-radius: 10px;
-    font-size: 0.88rem;
-    cursor: pointer;
+  /* ── Bottom row: result + secondary buttons ── */
+  #bottom-row {
     display: flex;
     align-items: center;
     gap: 6px;
-    transition: background 0.15s, transform 0.1s;
-    white-space: nowrap;
+    width: 100%;
+    max-width: var(--board-px, 480px);
+    flex-shrink: 0;
   }
-  .ctrl-btn-wide:hover { background: #1e2d5a; transform: scale(1.04); }
 
-  /* ── Result badge ── */
   #result-badge {
     display: none;
     background: #16213e;
     border: 1px solid #e2b96f;
-    border-radius: 10px;
-    padding: 9px 26px;
-    font-size: 0.95rem;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.82rem;
     font-weight: 700;
     color: #e2b96f;
-    letter-spacing: 1px;
-    text-align: center;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    flex: 1;
   }
+
+  /* small ghost buttons for flip/reset */
+  .ctrl-btn-sm {
+    background: #16213e;
+    border: 1px solid #2a2a5a;
+    color: #e2b96f;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .ctrl-btn-sm:hover { background: #1e2d5a; }
 </style>
 </head>
 <body>
-<h1>♟ Reproductor PGN</h1>
 <!-- Upload -->
 <div id="upload-area">
 <div id="drop-zone">
-<svg fill="none" height="40" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" width="40">
+<svg fill="none" height="36" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" width="36">
 <path d="M12 16V4m0 0L8 8m4-4l4 4"></path>
 <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"></path>
 </svg>
 <span>Arrastra tu archivo .pgn aquí</span>
-<span style="font-size:0.8rem">o haz clic para seleccionar</span>
+<span style="font-size:0.75rem">o haz clic para seleccionar</span>
 </div>
 <input accept=".pgn,.txt" id="file-input" type="file"/>
 <button class="btn-primary" onclick="document.getElementById('file-input').click()">Seleccionar archivo PGN</button>
@@ -286,13 +281,13 @@
 [White "..."]
 
 1.e4 e5 2.Nf3 ...'></textarea>
-<button class="btn-primary" id="btn-load-paste" style="width:100%">Cargar PGN pegado</button>
+<button class="btn-primary" id="btn-load-paste">Cargar PGN pegado</button>
 <div id="error-msg">⚠ No se pudo cargar el PGN. Verifica el formato.</div>
 </div>
 <!-- Player -->
 <div id="player-area">
 <div class="player-bar">
-<img alt="Negras" class="player-icon" id="black-icon" src="pieces/bK.svg?expires=1795275320&amp;signature=dbe1129fa255bc0932f88f553a228936a6794023599a8743d7029d54c5701d67&amp;kid=prod-250922"/>
+<img alt="Negras" class="player-icon" src="pieces/bK.svg?expires=1795278684&amp;signature=7b9865ae967c60a30ea867a654ba7768a55aaa9704f2fb76ee79f8f145706e74&amp;kid=prod-250922"/>
 <span class="player-name" id="black-name">Negras</span>
 <span class="player-elo" id="black-elo"></span>
 </div>
@@ -300,11 +295,10 @@
 <div id="board"></div>
 </div>
 <div class="player-bar">
-<img alt="Blancas" class="player-icon" id="white-icon" src="pieces/wK.svg?expires=1795275320&amp;signature=5ec5f130bf8ddc615a2c753ec0fb5d809308c7076b2e87390a6736128f2b01e7&amp;kid=prod-250922"/>
+<img alt="Blancas" class="player-icon" src="pieces/wK.svg?expires=1795278684&amp;signature=0ce7c42f8a6f12b8a1e428fc6e4ab91ef4c4ac3f99f27b8a5ac3773f6a1f5d81&amp;kid=prod-250922"/>
 <span class="player-name" id="white-name">Blancas</span>
 <span class="player-elo" id="white-elo"></span>
 </div>
-<div id="result-badge"></div>
 <div id="controls">
 <button class="ctrl-btn" id="btn-start" title="Inicio">⏮</button>
 <button class="ctrl-btn" id="btn-prev" title="Anterior">◀</button>
@@ -312,9 +306,10 @@
 <button class="ctrl-btn" id="btn-end" title="Final">⏭</button>
 <span id="move-counter">0 / 0</span>
 </div>
-<div id="secondary-controls">
-<button class="ctrl-btn-wide" id="flip-btn">⇅ Girar tablero</button>
-<button class="ctrl-btn-wide" id="reset-btn">↩ Otra partida</button>
+<div id="bottom-row">
+<div id="result-badge"></div>
+<button class="ctrl-btn-sm" id="flip-btn">⇅ Girar</button>
+<button class="ctrl-btn-sm" id="reset-btn">↩ Otra</button>
 </div>
 </div>
 <script>
@@ -325,12 +320,36 @@ const PIECE_IMG = {
   bB:'pieces/bB.svg', bN:'pieces/bN.svg', bP:'pieces/bP.svg'
 };
 
-function chessJsBoardToGrid(cjsBoard) {
-  return cjsBoard.map(row =>
-    row.map(sq => sq ? sq.color + sq.type.toUpperCase() : null)
-  );
+// ── Responsive board sizing ──────────────────
+// Reserve: 2 player bars (32px each) + controls (42px) + bottom row (32px)
+//          + gaps (5px × 5) + body padding (12px) = ~175px
+const RESERVED = 175;
+const MIN_BOARD = 240;
+const MAX_BOARD = 640;
+
+function calcBoardSize() {
+  const byHeight = window.innerHeight - RESERVED;
+  const byWidth  = window.innerWidth  * 0.98;
+  return Math.min(MAX_BOARD, Math.max(MIN_BOARD, Math.floor(Math.min(byHeight, byWidth))));
 }
 
+function applyBoardSize() {
+  const size = calcBoardSize();
+  const board = document.getElementById('board');
+  board.style.width  = size + 'px';
+  board.style.height = size + 'px';
+  document.documentElement.style.setProperty('--board-px', (size + 6) + 'px');
+}
+
+window.addEventListener('resize', () => { applyBoardSize(); if (states.length) updateDisplay(); });
+applyBoardSize();
+
+// ── Board conversion ─────────────────────────
+function chessJsBoardToGrid(b) {
+  return b.map(row => row.map(sq => sq ? sq.color + sq.type.toUpperCase() : null));
+}
+
+// ── Renderer ─────────────────────────────────
 const FILES = ['a','b','c','d','e','f','g','h'];
 
 function renderBoard(board, fromSq, toSq) {
@@ -340,68 +359,55 @@ function renderBoard(board, fromSq, toSq) {
     for (let fi = 0; fi < 8; fi++) {
       const r = flipped ? 7 - ri : ri;
       const f = flipped ? 7 - fi : fi;
-
       const sq = document.createElement('div');
       sq.className = 'square ' + ((r+f)%2===0 ? 'light' : 'dark');
       if (fromSq && fromSq[0]===r && fromSq[1]===f) sq.classList.add('hl-from');
       if (toSq   && toSq[0]===r   && toSq[1]===f)   sq.classList.add('hl-to');
-
       const p = board[r][f];
       if (p && PIECE_IMG[p]) {
         const img = document.createElement('img');
-        img.src = PIECE_IMG[p];
-        img.alt = p;
-        img.className = 'piece-img';
-        img.draggable = false;
+        img.src = PIECE_IMG[p]; img.alt = p;
+        img.className = 'piece-img'; img.draggable = false;
         sq.appendChild(img);
       }
-
       if (fi === 0) {
         const cr = document.createElement('span');
-        cr.className = 'coord-rank';
-        cr.textContent = 8 - r;
+        cr.className = 'coord-rank'; cr.textContent = 8 - r;
         sq.appendChild(cr);
       }
       if (ri === 7) {
         const cf = document.createElement('span');
-        cf.className = 'coord-file';
-        cf.textContent = FILES[f];
+        cf.className = 'coord-file'; cf.textContent = FILES[f];
         sq.appendChild(cf);
       }
-
       el.appendChild(sq);
     }
   }
 }
 
+// ── State ────────────────────────────────────
 let states  = [];
 let moveIdx = 0;
 let flipped = false;
 
+// ── Load game ────────────────────────────────
 function loadGame(pgn) {
   const chess = new Chess();
-  const loaded = chess.load_pgn(pgn, { sloppy: true });
-  if (!loaded) throw new Error('Invalid PGN');
+  if (!chess.load_pgn(pgn, { sloppy: true })) throw new Error('Invalid PGN');
 
   const white    = chess.header().White    || 'Blancas';
   const black    = chess.header().Black    || 'Negras';
   const whiteElo = chess.header().WhiteElo || '';
   const blackElo = chess.header().BlackElo || '';
   const result   = chess.header().Result   || '*';
-
-  const history = chess.history({ verbose: true });
+  const history  = chess.history({ verbose: true });
 
   chess.reset();
-  states = [];
-  states.push({ board: chessJsBoardToGrid(chess.board()), from: null, to: null });
-
+  states = [{ board: chessJsBoardToGrid(chess.board()), from: null, to: null }];
   for (const move of history) {
     chess.move(move);
-    states.push({
-      board: chessJsBoardToGrid(chess.board()),
-      from: algebraicToGrid(move.from),
-      to:   algebraicToGrid(move.to)
-    });
+    states.push({ board: chessJsBoardToGrid(chess.board()),
+                  from: ag(move.from), to: ag(move.to) });
   }
 
   document.getElementById('white-name').textContent = white;
@@ -412,9 +418,9 @@ function loadGame(pgn) {
   const badge = document.getElementById('result-badge');
   if (result && result !== '*') {
     let label = result;
-    if (result === '1-0')          label = `${white} gana  ·  1-0`;
-    else if (result === '0-1')     label = `${black} gana  ·  0-1`;
-    else if (result === '1/2-1/2') label = 'Tablas  ·  ½-½';
+    if (result === '1-0')          label = `${white} gana · 1-0`;
+    else if (result === '0-1')     label = `${black} gana · 0-1`;
+    else if (result === '1/2-1/2') label = 'Tablas · ½-½';
     badge.textContent = label;
     badge.style.display = 'block';
   } else {
@@ -422,22 +428,18 @@ function loadGame(pgn) {
   }
 
   moveIdx = 0;
+  applyBoardSize();
   updateDisplay();
 }
 
-function algebraicToGrid(sq) {
-  return [8 - parseInt(sq[1]), sq.charCodeAt(0) - 97];
-}
+function ag(sq) { return [8 - parseInt(sq[1]), sq.charCodeAt(0) - 97]; }
 
 function showPlayer() {
   document.getElementById('upload-area').style.display = 'none';
   document.getElementById('player-area').style.display = 'flex';
   document.getElementById('error-msg').style.display   = 'none';
 }
-
-function showError() {
-  document.getElementById('error-msg').style.display = 'block';
-}
+function showError() { document.getElementById('error-msg').style.display = 'block'; }
 
 function updateDisplay() {
   const s = states[moveIdx];
@@ -454,18 +456,16 @@ function goTo(idx) {
   updateDisplay();
 }
 
+// ── Controls ─────────────────────────────────
 document.getElementById('btn-start').addEventListener('click', () => goTo(0));
 document.getElementById('btn-prev').addEventListener('click',  () => goTo(moveIdx-1));
 document.getElementById('btn-next').addEventListener('click',  () => goTo(moveIdx+1));
 document.getElementById('btn-end').addEventListener('click',   () => goTo(states.length-1));
 
-document.getElementById('flip-btn').addEventListener('click', () => {
-  flipped = !flipped;
-  updateDisplay();
-});
+document.getElementById('flip-btn').addEventListener('click', () => { flipped = !flipped; updateDisplay(); });
 
 document.getElementById('reset-btn').addEventListener('click', () => {
-  flipped = false;
+  flipped = false; states = [];
   document.getElementById('player-area').style.display = 'none';
   document.getElementById('upload-area').style.display = 'flex';
   document.getElementById('error-msg').style.display   = 'none';
@@ -474,46 +474,33 @@ document.getElementById('reset-btn').addEventListener('click', () => {
 });
 
 document.addEventListener('keydown', e => {
-  if (!document.getElementById('player-area').style.display ||
-       document.getElementById('player-area').style.display === 'none') return;
+  if (document.getElementById('player-area').style.display !== 'flex') return;
   if (e.key === 'ArrowLeft')  goTo(moveIdx-1);
   if (e.key === 'ArrowRight') goTo(moveIdx+1);
   if (e.key === 'Home')       goTo(0);
   if (e.key === 'End')        goTo(states.length-1);
 });
 
+// ── File loading ─────────────────────────────
 function handlePGNText(pgn) {
-  try {
-    if (!pgn.trim()) throw new Error('empty');
-    loadGame(pgn);
-    showPlayer();
-  } catch(e) {
-    showError();
-  }
+  try { if (!pgn.trim()) throw new Error('empty'); loadGame(pgn); showPlayer(); }
+  catch(e) { showError(); }
 }
-
 function handleFile(file) {
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => handlePGNText(e.target.result);
-  reader.readAsText(file);
+  const r = new FileReader();
+  r.onload = e => handlePGNText(e.target.result);
+  r.readAsText(file);
 }
 
 document.getElementById('file-input').addEventListener('change', e => handleFile(e.target.files[0]));
+document.getElementById('btn-load-paste').addEventListener('click', () => handlePGNText(document.getElementById('pgn-paste').value));
 
-const dropZone = document.getElementById('drop-zone');
-dropZone.addEventListener('click',     () => document.getElementById('file-input').click());
-dropZone.addEventListener('dragover',  e  => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('drag-over');
-  handleFile(e.dataTransfer.files[0]);
-});
-
-document.getElementById('btn-load-paste').addEventListener('click', () => {
-  handlePGNText(document.getElementById('pgn-paste').value);
-});
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('click',     () => document.getElementById('file-input').click());
+dz.addEventListener('dragover',  e  => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); });
 </script>
 </body>
 </html>
