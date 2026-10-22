@@ -122,7 +122,7 @@
 
   .player-bar {
     width: 100%;
-    max-width: 480px;
+    max-width: 486px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -140,16 +140,20 @@
   .player-elo  { font-size: 0.8rem; color: #888; }
 
   /* ── Board ── */
+  /* The grid itself sizes to exactly 8×60px = 480px.
+     The border lives on a wrapper so it never eats into the squares. */
+  #board-frame {
+    border: 3px solid #e2b96f;
+    border-radius: 4px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    line-height: 0; /* removes inline gap */
+    display: inline-block;
+  }
+
   #board {
     display: grid;
     grid-template-columns: repeat(8, 60px);
     grid-template-rows: repeat(8, 60px);
-    width: 480px;
-    height: 480px;
-    border: 3px solid #e2b96f;
-    border-radius: 4px;
-    overflow: hidden;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
   }
 
   .square {
@@ -201,7 +205,6 @@
     gap: 8px;
   }
 
-  /* Square icon buttons (nav + flip + reset) */
   .ctrl-btn {
     background: #16213e;
     border: 1px solid #2a2a5a;
@@ -232,7 +235,6 @@
     gap: 8px;
   }
 
-  /* Wide ctrl-btn variant for text labels */
   .ctrl-btn-wide {
     background: #16213e;
     border: 1px solid #2a2a5a;
@@ -285,18 +287,20 @@
 
 1.e4 e5 2.Nf3 ...'></textarea>
 <button class="btn-primary" id="btn-load-paste" style="width:100%">Cargar PGN pegado</button>
-<div id="error-msg">⚠ No se pudo cargar el PGN. Verifica el formato o la URL.</div>
+<div id="error-msg">⚠ No se pudo cargar el PGN. Verifica el formato.</div>
 </div>
 <!-- Player -->
 <div id="player-area">
 <div class="player-bar">
-<img alt="Negras" class="player-icon" id="black-icon" src="pieces/bK.svg?expires=1795257412&amp;signature=a42a35f012611f606897e4b1257cbe5a61aa504aae25f6553bf3023870d2aa67&amp;kid=prod-250922"/>
+<img alt="Negras" class="player-icon" id="black-icon" src="pieces/bK.svg?expires=1795275320&amp;signature=dbe1129fa255bc0932f88f553a228936a6794023599a8743d7029d54c5701d67&amp;kid=prod-250922"/>
 <span class="player-name" id="black-name">Negras</span>
 <span class="player-elo" id="black-elo"></span>
 </div>
+<div id="board-frame">
 <div id="board"></div>
+</div>
 <div class="player-bar">
-<img alt="Blancas" class="player-icon" id="white-icon" src="pieces/wK.svg?expires=1795257412&amp;signature=b16993de196f114f7bc0f095942800934677e47eb9f16a196f16f744b7b60b15&amp;kid=prod-250922"/>
+<img alt="Blancas" class="player-icon" id="white-icon" src="pieces/wK.svg?expires=1795275320&amp;signature=5ec5f130bf8ddc615a2c753ec0fb5d809308c7076b2e87390a6736128f2b01e7&amp;kid=prod-250922"/>
 <span class="player-name" id="white-name">Blancas</span>
 <span class="player-elo" id="white-elo"></span>
 </div>
@@ -314,9 +318,6 @@
 </div>
 </div>
 <script>
-// ─────────────────────────────────────────────
-//  PIECE → SVG PATH MAP  (CBurnett)
-// ─────────────────────────────────────────────
 const PIECE_IMG = {
   wK:'pieces/wK.svg', wQ:'pieces/wQ.svg', wR:'pieces/wR.svg',
   wB:'pieces/wB.svg', wN:'pieces/wN.svg', wP:'pieces/wP.svg',
@@ -324,18 +325,12 @@ const PIECE_IMG = {
   bB:'pieces/bB.svg', bN:'pieces/bN.svg', bP:'pieces/bP.svg'
 };
 
-// ─────────────────────────────────────────────
-//  BOARD CONVERSION  (chess.js → render format)
-// ─────────────────────────────────────────────
 function chessJsBoardToGrid(cjsBoard) {
   return cjsBoard.map(row =>
     row.map(sq => sq ? sq.color + sq.type.toUpperCase() : null)
   );
 }
 
-// ─────────────────────────────────────────────
-//  BOARD RENDERER  (CBurnett SVG pieces)
-// ─────────────────────────────────────────────
 const FILES = ['a','b','c','d','e','f','g','h'];
 
 function renderBoard(board, fromSq, toSq) {
@@ -379,16 +374,10 @@ function renderBoard(board, fromSq, toSq) {
   }
 }
 
-// ─────────────────────────────────────────────
-//  APP STATE
-// ─────────────────────────────────────────────
 let states  = [];
 let moveIdx = 0;
 let flipped = false;
 
-// ─────────────────────────────────────────────
-//  LOAD GAME
-// ─────────────────────────────────────────────
 function loadGame(pgn) {
   const chess = new Chess();
   const loaded = chess.load_pgn(pgn, { sloppy: true });
@@ -450,9 +439,6 @@ function showError() {
   document.getElementById('error-msg').style.display = 'block';
 }
 
-// ─────────────────────────────────────────────
-//  DISPLAY
-// ─────────────────────────────────────────────
 function updateDisplay() {
   const s = states[moveIdx];
   renderBoard(s.board, s.from, s.to);
@@ -468,9 +454,6 @@ function goTo(idx) {
   updateDisplay();
 }
 
-// ─────────────────────────────────────────────
-//  CONTROLS
-// ─────────────────────────────────────────────
 document.getElementById('btn-start').addEventListener('click', () => goTo(0));
 document.getElementById('btn-prev').addEventListener('click',  () => goTo(moveIdx-1));
 document.getElementById('btn-next').addEventListener('click',  () => goTo(moveIdx+1));
@@ -499,9 +482,6 @@ document.addEventListener('keydown', e => {
   if (e.key === 'End')        goTo(states.length-1);
 });
 
-// ─────────────────────────────────────────────
-//  FILE LOADING
-// ─────────────────────────────────────────────
 function handlePGNText(pgn) {
   try {
     if (!pgn.trim()) throw new Error('empty');
@@ -531,12 +511,8 @@ dropZone.addEventListener('drop', e => {
   handleFile(e.dataTransfer.files[0]);
 });
 
-// ─────────────────────────────────────────────
-//  URL LOADING
-// ─────────────────────────────────────────────
 document.getElementById('btn-load-paste').addEventListener('click', () => {
-  const pgn = document.getElementById('pgn-paste').value;
-  handlePGNText(pgn);
+  handlePGNText(document.getElementById('pgn-paste').value);
 });
 </script>
 </body>
